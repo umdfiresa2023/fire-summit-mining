@@ -1,15 +1,15 @@
 # Team Mining
-Luke, Ashmita, Jack, Alex
+Luke Morelli, Ashmitha Gowda, Jack Spoleti, Alex Fichter
 
 ## Research Question
 
 Does cobalt mining influence conflict more than other types of mining in
 the Democratic Republic of the Congo?
 
-<img src="Congo_Mining.jpeg" width="493" />
+![](images/1.avif)
 
-The Shabara artisanal mine, near the Congolese boomtown of Kolwezi.
-Impoverished miners dig out cobalt and copper by hand.
+Thousands of Congolese workers cram into a cobalt mining pit.(Siddharth
+Kara, independent.co.uk)
 
 ## Data Wrangling
 
