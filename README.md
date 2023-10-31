@@ -6,7 +6,7 @@ Luke, Ashmita, Jack, Alex
 Does cobalt mining influence conflict more than other types of mining in
 the Democratic Republic of the Congo?
 
-[Mine_Image](Congo_Mining.jpeg)
+<img src="Congo_Mining.jpeg" width="493" />
 
 The Shabara artisanal mine, near the Congolese boomtown of Kolwezi.
 Impoverished miners dig out cobalt and copper by hand.
@@ -22,7 +22,7 @@ data is sourced from the Armed Conflict Location & Event Data Project
 small, in the entire world between 1997 and 2023. The conflict data can
 be downloaded from this webpage: https://acleddata.com/data-export-tool/
 
-[Conflict_Map](conflict_locations.png)
+<img src="conflict_locations.png" width="428" height="433" />
 
 The map above displays all of the conflicts that occurred in the
 Democratic Republic of the Congo between 1997 and 2023. Each conflict is
@@ -61,7 +61,7 @@ of the Congo’s Ministry of Mining who had made the data publicly
 available on the Global Forest Watch website here:
 https://data.globalforestwatch.org/datasets/democratic-republic-of-the-congo-mining-permits/explore
 
-[Mine_Locations_Map](mining_locations.png)
+![](mining_locations.png)
 
 The chart above displays all of the mining permits granted in the
 Democratic Republic of the Congo between 1997 and September of 2023
@@ -155,7 +155,7 @@ final_df <- merged_df %>%
     filter(!is.na(type))
 ```
 
-[Intersect_Map](intersection.png)
+![](intersection.png)
 
 The map above demonstrates the overlap between mining locations and
 conflict in the Democratic Republic of the Congo.
@@ -204,7 +204,7 @@ cobalt_comp_df <- rbind(cobalt_df, total_non_cobalt_df)
 
 ## Preliminary Results
 
-[Final_Graph](final_graph.png)
+![](final_graph.png)
 
 The graph above displays the differences in the mean number of active
 and inactive conflicts between cobalt mines and non-cobalt mines. Cobalt
