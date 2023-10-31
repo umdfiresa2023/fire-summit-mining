@@ -3,8 +3,8 @@ Luke Morelli, Ashmitha Gowda, Jack Spoleti, Alex Fichter
 
 ## Research Question
 
-Does cobalt mining result in more conflict than other forms of mining in
-the Democratic Republic of the Congo?
+Does cobalt mining cause more conflict than other forms of mining in the
+Democratic Republic of the Congo?
 
 ![](images/1.avif)
 
