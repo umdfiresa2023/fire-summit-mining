@@ -189,6 +189,6 @@ cobalt_comp_df <- rbind(cobalt_df, total_non_cobalt_df)
 
 ## Preliminary Results
 
-![](final_bargraph.png){width="509"}
+![](final_bargraph.png){width="530"}
 
 The graph above displays the differences in the mean number of active and inactive conflicts between cobalt mines and non-cobalt mines. Cobalt mines had slightly more active conflicts (2.43 active conflicts for cobalt mines to 1.64 active conflicts for non-cobalt mines on average) while non-cobalt mines were more likely to have conflicts before they opened (1.64 conflicts before mine open for non-cobalt mines to 0.33 conflicts before mine open for cobalt mines) and also after they opened (9.04 conflicts after mine open for non-cobalt mines to 1.63 conflicts after mine open for cobalt mines). Overall, it appears that cobalt mines did not cause a disproportionate amount of conflict when compared to other types of mines.
