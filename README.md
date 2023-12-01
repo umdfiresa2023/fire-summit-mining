@@ -229,3 +229,62 @@ after they opened (9.04 conflicts after mine close for non-cobalt mines
 to 1.63 conflicts after mine close for cobalt mines on average).
 Overall, it appears that cobalt mines did not cause a disproportionate
 amount of conflict when compared to other types of mines.
+
+## Regressions
+
+The following three code snippets display Differences-in-Differences
+(DiD) regressions that are used to assess the level of causality between
+cobalt mines and the mean number of active conflicts.
+
+\(1\)
+
+``` r
+read_csv("loadsdatatable.csv") -> df
+summary(c1<- lm(n ~ active + re_Co + active:re_Co, data=df))
+```
+
+The first regression (pictured above) illustrates a DiD regression in
+its most basic format. It computes the impact of cobalt mines on the
+mean number of conflicts by including the treatment group (re_Co), the
+treatment period (active - which stores whether a mine is active in a
+particular year), and their interaction (active:re_Co) as variables in
+the DiD model. The results of the regression are statistically
+significant and indicate that for every year a cobalt mine is open, it
+is predicted to have 0.231 more conflicts on average when compared to
+other types of mines.
+
+\(2\)
+
+``` r
+summary(c1<- lm(n ~ active + re_Co + active:re_Co + year_do + year_de + year + active_97_22, data=df))
+```
+
+The second regression (pictured above) adds control variables to the DiD
+model. The control variables are as follows: year_do (date mine opened),
+year_de (date mine closed), year, and active_97_22 (number of years a
+particular mine is opened between 1997 and 2022). The results of the
+regression are still statistically significant, but less drastic than
+the previous regression, as they indicate that cobalt mines are
+predicted to have 0.164 more conflicts on average when compared to other
+types of mines for every year they are open.
+
+\(3\)
+
+``` r
+install.packages("lfe")
+library("lfe")
+modelName <- felm(n ~ active + re_Co + active:re_Co + year_do + year_de + year + active_97_22 + re_Sn + re_Ta | parties + type, data = df)
+summary(modelName)
+```
+
+Our last regression (pictured above) added fixed effects to the DiD
+model, and therefore had to use the felm function instead of the lm
+function. The fixed effects are as follows: parties (the mining company
+that was granted the permit) and type (the type of mining permit that
+was granted). It also added two more control variables (re_Sn and
+re_Ta), which represent whether a mine produces tin or tantalum
+respectively. The results of the regression are still statistically
+significant, but less drastic than the previous two regressions, as they
+indicate that cobalt mines are predicted to have 0.148 more conflicts on
+average when compared to other types of mines for every year they are
+open.
