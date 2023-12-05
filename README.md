@@ -8,19 +8,19 @@ Democratic Republic of the Congo?
 
 ![](images/1.avif)
 
-Thousands of Congolese workers cram into a cobalt mining pit.(Siddharth
-Kara, independent.co.uk)
+Thousands of Congolese workers cram into a cobalt mining pit (Siddharth
+Kara, independent.co.uk).
 
 ## Data Wrangling
 
 **Outcome variable**
 
 Our outcome variable is the average number of conflicts that occur
-within a 10km radius of each mine between 1997 and September 2023. The
-conflict data is sourced from the Armed Conflict Location & Event Data
-Project (ACLED) which contains all of the documented conflicts, both
-large and small, in the entire world between 1997 and 2023. The conflict
-data can be downloaded from this webpage:
+within a 10km radius of each mine per year between 1997 and September
+2023. The conflict data is sourced from the Armed Conflict Location &
+Event Data Project (ACLED) which contains all of the documented
+conflicts, both large and small, in the entire world between 1997 and
+2023. The conflict data can be downloaded from this webpage:
 https://acleddata.com/data-export-tool/
 
 <img src="conflict_locations.png" width="428" height="433" />
@@ -89,6 +89,20 @@ library("simplermarkdown")
 #Getting data from file provided by the Democratic Republic of the Congo Ministry of Mines
 data_name <- "Democratic_Republic_of_the_Congo_mining_permits"
 
+#Creating mines data frame
+df_mines_path = paste0(data_name, "/", data_name, ".dbf")
+start_date <- as.Date("1997-01-01")
+end_date <- as.Date("2023-01-01")
+df_mines <- read.dbf(df_mines_path) %>%
+  filter(!is.na(date_do)) %>%
+  filter(!is.na(date_de1)) %>%
+  mutate(days_before = as.numeric(difftime(as.Date(date_do), start_date, units = "days"))) %>%
+  mutate(years_before = days_before / 365.25) %>%
+  mutate(days_active = as.numeric(difftime(as.Date(date_de1), as.Date(date_do), units = "days"))) %>%
+  mutate(years_active = days_active / 365.25) %>%
+  mutate(days_after = as.numeric(difftime(end_date, as.Date(date_de1), units = "days"))) %>%
+  mutate(years_after = days_after / 365.25)
+
 #Changing name of "objectid" column to "mine_number"
 colnames(df_mines)[colnames(df_mines) == "objectid"] <- "mine_number"
 
@@ -103,10 +117,10 @@ mines_data <- project(mines, "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs")
 **Intersection Process**
 
 Now that we have read in the data for both the conflicts and the mining
-permits, we need to determine how many conflicts occurred within a 10km
-radius of each mine location for our three categories: before mine open,
-during mine operation, and after mine close. The following R code
-demonstrates this proccess:
+permits, we need to determine how many conflicts occurred per year
+within a 10km radius of each mine location for each of our three
+categories: before mine open, during mine operation, and after mine
+close. The following R code demonstrates this process:
 
 ``` r
 library("tidyverse")
@@ -144,7 +158,7 @@ merged_df <- merge(intersect_df, df_mines, by = "mine_number", all.x = TRUE, all
   mutate(active = ifelse(date > date_do & date < date_de1, 1, 0)) %>%
   mutate(after = ifelse(date > date_de1, 1, 0))
 
-#Creating one last dataframe that contains the following columns for each mine: number of conflicts before the mine opened, number of active conflicts (conflicts that occured while the mine was open), number of conflicts after the mine closed, year the mine opened, year the mine closed, mine status (currently open or closed), the type of minerals mined, and whether the mine is a cobalt mine or not.
+#Creating one last dataframe that contains the following columns for each mine: number of conflicts before mine open, during mine operation, and after mine close, year the mine opened, year the mine closed, mine status (currently open or closed), the type of minerals mined, number of conficts per year for before mine open, during mine operation, and after mine close, and whether the mine is a cobalt mine or not.
 final_df <- merged_df %>%
   group_by(mine_number) %>%
   summarize(
@@ -156,9 +170,12 @@ final_df <- merged_df %>%
     status = first(statut),
     type = first(resource)) %>%
     mutate(num_conflicts_active = ifelse(is.na(num_conflicts_active), 0, num_conflicts_active)) %>%
-    mutate(num_conflicts_before = ifelse(is.na(num_conflicts_before), 0, num_conflicts_before)) %>%
-    mutate(num_conflicts_after = ifelse(is.na(num_conflicts_after), 0, num_conflicts_after)) %>%
-    mutate(is_cobalt_mine = ifelse(grepl(substring_co, type), 1, 0)) %>%
+  mutate(num_conflicts_before = ifelse(is.na(num_conflicts_before), 0, num_conflicts_before)) %>%
+  mutate(num_conflicts_after = ifelse(is.na(num_conflicts_after), 0, num_conflicts_after)) %>%
+  mutate(before_conflicts_year = num_conflicts_before/years_before) %>%
+  mutate(active_conflicts_year = num_conflicts_active/years_active) %>%
+  mutate(after_conflicts_year = num_conflicts_after/years_after) %>%
+  mutate(is_cobalt_mine = ifelse(grepl(substring_co, type), 1, 0)) %>%
     filter(!is.na(year_start)) %>%
     filter(!is.na(type))
 ```
@@ -171,11 +188,11 @@ conflict in the Democratic Republic of the Congo.
 **Control variables**
 
 Our control variable is the type of mine, where we are specifically
-comparing cobalt mines to other types of mines. The data on mining
+comparing cobalt mines to all other types of mines. The data on mining
 permits provided by the Democratic Republic of the Congo’s Ministry of
 Mining contains information on the types of minerals that are mined at
 each mining location. A mine is considered a cobalt mine if cobalt is
-one of the minerals that are mined there.
+among the minerals mined at that location
 
 **Wrangling Methodology**
 
@@ -185,14 +202,15 @@ library("terra")
 library("simplermarkdown")
 
 #Given a list of all the possible types of minerals that are present in the mines data, this loop computes the mean number of conflicts for the three categories discussed previously: before mine open, during mine operation, and after mine close for all the mines of each type of mineral.
+final_mineral_df <- data.frame()
 for(mineral in unique_resources) {
   f2<-final_df %>%
   filter(str_detect(final_df_op$type, mineral)) %>%
   summarize(
     mineral = mineral,
-    mean_before = mean(num_conflicts_before),
-    mean_active=mean(num_conflicts_active),
-    mean_after = mean(num_conflicts_after))
+    mean_before = mean(before_conflicts_year),
+    mean_active= mean(active_conflicts_year),
+    mean_after = mean(after_conflicts_year))
   final_mineral_df <- rbind(final_mineral_df, f2)
 }
 
@@ -203,7 +221,7 @@ cobalt_df <- final_mineral_df %>%
 non_cobalt_df <- final_mineral_df %>%
   filter(mineral != "Co")
 
-#Computes the mean number of conflicts for before mine open, during mine operation, and after mine close for all non-cobalt mines
+#Computes the mean number of conflicts per year for before mine open, during mine operation, and after mine close for all non-cobalt mines
 total_non_cobalt_df <- data.frame(mineral = "Non_Cobalt", 
                        mean_active = mean(non_cobalt_df$mean_before),
                        mean_before = mean(non_cobalt_df$mean_active),
@@ -215,20 +233,24 @@ cobalt_comp_df <- rbind(cobalt_df, total_non_cobalt_df)
 
 ## Preliminary Results
 
-<img src="final_bargraph.png" width="530" />
+![](final_results.png)
 
-The graph above displays the mean number of conflicts for both cobalt
-mines and non-cobalt mines within each of the three categories we
+The graph above displays the mean number of conflicts per year for both
+cobalt mines and non-cobalt mines within each of the three categories we
 previously discussed: before mine open, during mine operation, and after
-mine close. Cobalt mines had slightly more active conflicts (2.43 active
-conflicts for cobalt mines to 1.64 active conflicts for non-cobalt mines
-on average) while non-cobalt mines were more likely to have conflicts
-before they opened (1.64 conflicts before mine open for non-cobalt mines
-to 0.33 conflicts before mine open for cobalt mines on average) and also
-after they opened (9.04 conflicts after mine close for non-cobalt mines
-to 1.63 conflicts after mine close for cobalt mines on average).
-Overall, it appears that cobalt mines did not cause a disproportionate
-amount of conflict when compared to other types of mines.
+mine close. Cobalt mines had approximately 64% more active conflicts
+(0.160 active conflicts for cobalt mines per year to 0.102 active
+conflicts for non-cobalt mines per year on average) while non-cobalt
+mines were more likely to have conflicts before they opened (0.190
+conflicts before mine open for non-cobalt mines per year to 0.030
+conflicts before mine open for cobalt mines per year on average) and
+also after they opened (1.04 conflicts after mine close for non-cobalt
+mines per year to 0.260 conflicts after mine close for cobalt mines per
+year on average). Overall, when taking into account the large
+discrepancy in the average amount of conflicts in the years before and
+after cobalt and non-cobalt mines were opened, it appears that cobalt
+mines did not cause a disproportionate amount of conflict when compared
+to other types of mines.
 
 ## Regressions
 
